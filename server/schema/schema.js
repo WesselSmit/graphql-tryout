@@ -1,7 +1,7 @@
 const { GraphQLSchema, GraphQLObjectType, GraphQLID, GraphQLString, GraphQLInt, GraphQLList } = require('graphql')
 const _ = require('lodash')
-const BookModel = require('../models/book')
-const AuthorModel = require('../models/author')
+const Book = require('../models/book')
+const Author = require('../models/author')
 
 
 // * types
@@ -14,7 +14,7 @@ const BookType = new GraphQLObjectType({
     author: {
       type: AuthorType,
       resolve(parent) {
-        return _.find(dummyData.authors, { id: parent.authorId })
+        return Author.findById(parent.authorId)
       }
      },
   })
@@ -29,7 +29,7 @@ const AuthorType = new GraphQLObjectType({
     books: {
       type: new GraphQLList(BookType),
       resolve(parent) {
-        return _.filter(dummyData.books, { authorId: parent.id })
+        return Book.find({ authorId: parent.id })
       }
     }
   })
@@ -44,26 +44,26 @@ const RootQuery = new GraphQLObjectType({
       type: BookType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return _.find(dummyData.books, { id: args.id })
+        return Book.findById(args.id)
       }
     },
     books: {
       type: new GraphQLList(BookType),
       resolve() {
-        return dummyData.books
+        return Book.find({})
       }
     },
     author: {
       type: AuthorType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        return _.find(dummyData.authors, { id: args.id })
+        return Author.findById(args.id)
       }
     },
     authors: {
       type: new GraphQLList(AuthorType),
       resolve() {
-        return dummyData.authors
+        return Author.find({})
       }
     }
   }
@@ -81,7 +81,7 @@ const Mutation = new GraphQLObjectType({
         age: { type: GraphQLInt }
       },
       resolve(parent, args) {
-        const author = new AuthorModel({
+        const author = new Author({
           name: args.name,
           age: args.age
         })
@@ -96,7 +96,7 @@ const Mutation = new GraphQLObjectType({
         authorId: { type: GraphQLID }
       },
       resolve(parent, args) {
-        const book = new BookModel({
+        const book = new Book({
           name: args.name,
           genre: args.genre,
           authorId: args.authorId
